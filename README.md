@@ -53,3 +53,4 @@ tar -czvf ~/dealer-sim-sui-prototype.tgz -C /home/winston/dealer-sim-returns-pro
 - Valid serials: **894000000000000** – **894000000000099**
 - Resellers: **RS-1001**, **RS-2044**, **RS-3312**
 - IPRS mock: national ID with **≥5 digits** passes
+# safsim
