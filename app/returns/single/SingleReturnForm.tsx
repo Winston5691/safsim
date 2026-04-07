@@ -2,8 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
-import { Card } from "@/components/Card";
+import NextLink from "next/link";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import type { Dayjs } from "dayjs";
+import { Alert as SuiAlert, InputField, SuiDatePicker } from "@safaricom/sui";
 import { MOCK_RESELLERS } from "@/lib/mockData";
 import {
   mockValidateSerialsInput,
@@ -26,8 +39,8 @@ export function SingleReturnForm() {
   const [destinationCode, setDestinationCode] = useState("");
   const [location, setLocation] = useState("Westlands Mall");
   const [contactPerson, setContactPerson] = useState("Jane W.");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
   async function handleValidateSerials() {
     setError(null);
@@ -49,6 +62,10 @@ export function SingleReturnForm() {
       setError("Validate serials first.");
       return;
     }
+    if (!startDate || !endDate) {
+      setError("Select return start and end dates.");
+      return;
+    }
     setBusy(true);
     const r = await mockValidateReseller(resellerId);
     if (!r.exists) {
@@ -64,9 +81,9 @@ export function SingleReturnForm() {
     }
     const d = await mockFetchDestinations();
     const dest = destinationCode || d[0]?.code;
-    if (!dest || !location.trim() || !contactPerson.trim() || !startDate || !endDate) {
+    if (!dest || !location.trim() || !contactPerson.trim()) {
       setBusy(false);
-      setError("Fill destination, dates, location, and contact.");
+      setError("Fill destination, location, and contact.");
       return;
     }
     const sub = await mockSubmitReturn({
@@ -77,141 +94,135 @@ export function SingleReturnForm() {
       destinationCode: dest,
       location,
       contactPerson,
-      returnStartDate: startDate,
-      returnEndDate: endDate,
+      returnStartDate: startDate.format("YYYY-MM-DD"),
+      returnEndDate: endDate.format("YYYY-MM-DD"),
     });
     setBusy(false);
     if (sub.ok) router.push(`/returns/success?ref=${encodeURIComponent(sub.reference)}`);
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Single serial return</h1>
-          <p className="text-sm text-[var(--ink-soft)]">
-            One field for an individual serial or small range (e.g. <code className="rounded bg-zinc-100 px-1">894…-894…</code>
+    <Stack spacing={3} maxWidth={560} mx="auto" component="form" onSubmit={handleSubmit}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
+        <Box>
+          <Typography variant="h4" component="h1" fontWeight={700}>
+            Single serial return
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            One field for an individual serial or small range (e.g.{" "}
+            <Box component="code" sx={{ bgcolor: "action.hover", px: 0.5, borderRadius: 0.5 }}>
+              894…-894…
+            </Box>
             ).
-          </p>
-        </div>
-        <Link href="/returns" className="shrink-0 text-sm text-[var(--brand)] hover:underline">
-          ← Back
-        </Link>
-      </div>
+          </Typography>
+        </Box>
+        <Button component={NextLink} href="/returns" size="small">
+          Back
+        </Button>
+      </Stack>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card title="Serials">
-          <label className="block text-sm">
-            <span className="text-[var(--muted)]">Serial / range</span>
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 font-mono text-sm"
-              value={serialInput}
-              onChange={(e) => setSerialInput(e.target.value)}
-            />
-          </label>
-          <button
-            type="button"
-            className="mt-3 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium"
-            onClick={handleValidateSerials}
-            disabled={busy}
-          >
-            {busy ? "Checking…" : "Validate serials"}
-          </button>
-          {serials.length ? (
-            <p className="mt-2 text-xs text-emerald-700">
-              OK — {serials.length} serial(s): {serials.join(", ")}
-            </p>
-          ) : null}
-        </Card>
-
-        <Card title="Reseller & identity">
-          <label className="mb-3 block text-sm">
-            <span className="text-[var(--muted)]">Reseller ID</span>
-            <select
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-              value={resellerId}
-              onChange={(e) => setResellerId(e.target.value)}
-            >
-              {MOCK_RESELLERS.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name} ({r.id})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-sm">
-            <span className="text-[var(--muted)]">National ID (IPRS)</span>
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 font-mono text-sm"
-              value={nationalId}
-              onChange={(e) => setNationalId(e.target.value)}
-            />
-          </label>
-        </Card>
-
-        <Card title="Destination & period">
-          <p className="mb-3 text-xs text-[var(--muted)]">
-            Destinations load on submit in this compact flow (same mock service as batch).
-          </p>
-          <label className="mb-3 block text-sm">
-            <span className="text-[var(--muted)]">Destination (optional preset)</span>
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-              value={destinationCode}
-              onChange={(e) => setDestinationCode(e.target.value)}
-              placeholder="Leave empty to use first from API"
-            />
-          </label>
-          <label className="mb-3 block text-sm">
-            <span className="text-[var(--muted)]">Location</span>
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </label>
-          <label className="mb-3 block text-sm">
-            <span className="text-[var(--muted)]">Contact person</span>
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-              value={contactPerson}
-              onChange={(e) => setContactPerson(e.target.value)}
-            />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm">
-              <span className="text-[var(--muted)]">Return start</span>
-              <input
-                type="date"
-                className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="text-[var(--muted)]">Return end</span>
-              <input
-                type="date"
-                className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </label>
-          </div>
-        </Card>
-
-        {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">{error}</p>
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Serials
+        </Typography>
+        <InputField
+          formControlProps={{ fullWidth: true }}
+          inputLabelProps={{ children: "Serial / range" }}
+          value={serialInput}
+          onChange={(e) => setSerialInput(e.target.value)}
+          sx={{ fontFamily: "monospace" }}
+        />
+        <Button type="button" variant="outlined" sx={{ mt: 2 }} onClick={handleValidateSerials} disabled={busy}>
+          {busy ? "Checking…" : "Validate serials"}
+        </Button>
+        {serials.length ? (
+          <Typography variant="caption" color="success.main" display="block" mt={1}>
+            OK — {serials.length} serial(s): {serials.join(", ")}
+          </Typography>
         ) : null}
+      </Paper>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-lg bg-[var(--brand)] py-3 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {busy ? "Submitting…" : "Submit distribution return"}
-        </button>
-      </form>
-    </div>
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Reseller &amp; identity
+        </Typography>
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="res-label">Reseller</InputLabel>
+          <Select
+            labelId="res-label"
+            label="Reseller"
+            value={resellerId}
+            onChange={(e) => setResellerId(e.target.value as string)}
+          >
+            {MOCK_RESELLERS.map((r) => (
+              <MenuItem key={r.id} value={r.id}>
+                {r.name} ({r.id})
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="National ID (IPRS)"
+          value={nationalId}
+          onChange={(e) => setNationalId(e.target.value)}
+          InputProps={{ sx: { fontFamily: "monospace" } }}
+        />
+      </Paper>
+
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Destination &amp; period
+        </Typography>
+        <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+          Destinations load on submit (same mock service as batch). Optional preset code below.
+        </Typography>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Destination code (optional)"
+          value={destinationCode}
+          onChange={(e) => setDestinationCode(e.target.value)}
+          placeholder="Leave empty to use first from API"
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Contact person"
+          value={contactPerson}
+          onChange={(e) => setContactPerson(e.target.value)}
+        />
+        <Stack spacing={2} direction={{ xs: "column", sm: "row" }} mt={1}>
+          <SuiDatePicker
+            label="Return start"
+            value={startDate}
+            onChange={(v) => setStartDate(v)}
+            format="DD/MM/YYYY"
+            slotProps={{ textField: { fullWidth: true } }}
+          />
+          <SuiDatePicker
+            label="Return end"
+            value={endDate}
+            onChange={(v) => setEndDate(v)}
+            format="DD/MM/YYYY"
+            slotProps={{ textField: { fullWidth: true } }}
+          />
+        </Stack>
+      </Paper>
+
+      {error ? <SuiAlert severity="error">{error}</SuiAlert> : null}
+
+      <Button type="submit" variant="contained" size="large" disabled={busy}>
+        {busy ? "Submitting…" : "Submit distribution return"}
+      </Button>
+    </Stack>
   );
 }

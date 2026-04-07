@@ -1,47 +1,81 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { Card } from "@/components/Card";
-
-function SuccessBody() {
-  const sp = useSearchParams();
-  const ref = sp.get("ref") ?? "—";
-
-  return (
-    <div className="mx-auto max-w-lg space-y-6 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl">
-        ✓
-      </div>
-      <h1 className="text-2xl font-bold text-[var(--ink)]">Return submitted</h1>
-      <Card>
-        <p className="text-sm text-[var(--ink-soft)]">Reference number</p>
-        <p className="mt-1 font-mono text-xl font-semibold text-[var(--brand)]">{ref}</p>
-        <p className="mt-4 text-sm text-[var(--ink-soft)]">
-          In production, an acknowledgement would be sent via SMS/email (notification service). Audit log
-          records who submitted what and when.
-        </p>
-      </Card>
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link
-          href="/"
-          className="rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]"
-        >
-          Back to dashboard
-        </Link>
-        <Link href="/returns" className="rounded-lg border border-[var(--border)] px-5 py-2.5 text-sm font-semibold">
-          File another return
-        </Link>
-      </div>
-    </div>
-  );
-}
+import NextLink from "next/link";
+import {
+  Box,
+  Button,
+  Card,
+  Container,
+  Stack,
+  Typography,
+  Paper,
+  Divider,
+} from "@mui/material";
+import { CheckCircle, ContentCopy, Download, History } from "@mui/icons-material";
 
 export default function SuccessPage() {
+  const refNumber = "SIMRET-20240405-9921";
+
   return (
-    <Suspense fallback={<p className="text-center text-sm text-[var(--muted)]">Loading…</p>}>
-      <SuccessBody />
-    </Suspense>
+    <Container maxWidth="sm" className="animate-fadeInUp" sx={{ mt: 8 }}>
+      <Stack spacing={4} alignItems="center">
+        <CheckCircle color="success" sx={{ fontSize: 100, filter: "drop-shadow(0 0 10px rgba(27, 147, 48, 0.3))" }} />
+        
+        <Box textAlign="center">
+          <Typography variant="h4" fontWeight={700}>Submission Successful!</Typography>
+          <Typography variant="body1" color="text.secondary">
+            Your SIM distribution return has been processed and stored for compliance auditing.
+          </Typography>
+        </Box>
+
+        <Paper variant="outlined" sx={{ p: 3, width: "100%", borderRadius: 4, bgcolor: "#F8F9FA", border: "1px dashed #ccc" }}>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                Reference Number
+              </Typography>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6" fontWeight={700} color="primary">{refNumber}</Typography>
+                <Button size="small" startIcon={<ContentCopy />} sx={{ fontWeight: 600 }}>Copy</Button>
+              </Stack>
+            </Box>
+            <Divider />
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography variant="body2">Status</Typography>
+              <Typography variant="body2" fontWeight={600} color="success.main">SUBMITTED</Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography variant="body2">Date</Typography>
+              <Typography variant="body2" fontWeight={600}>April 5, 2026</Typography>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
+          <Button 
+            fullWidth 
+            variant="contained" 
+            component={NextLink} 
+            href="/returns/history"
+            startIcon={<History />}
+            sx={{ py: 2, fontWeight: 700 }}
+          >
+            View History
+          </Button>
+          <Button 
+            fullWidth 
+            variant="outlined" 
+            startIcon={<Download />}
+            sx={{ py: 2, fontWeight: 700 }}
+          >
+            Download Receipt
+          </Button>
+        </Stack>
+
+        <Button component={NextLink} href="/" sx={{ fontWeight: 600 }}>
+          Back to Dashboard
+        </Button>
+      </Stack>
+    </Container>
   );
 }

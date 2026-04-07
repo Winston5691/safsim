@@ -1,42 +1,107 @@
-import Link from "next/link";
+"use client";
 
-const nav = [
-  { href: "/", label: "Home" },
-  { href: "/returns", label: "SIM returns" },
-  { href: "/monitoring", label: "Compliance view" },
-];
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  Box,
+  Drawer,
+  useMediaQuery,
+  useTheme,
+  Breadcrumbs,
+  Link,
+  Typography,
+} from "@mui/material";
+import { NavigateNext } from "@mui/icons-material";
+import NextLink from "next/link";
+import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
+
+const sidebarWidth = 220;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isLoginPage = pathname.startsWith("/login");
+
+  if (isLoginPage) return <>{children}</>;
+
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+
+  const pathnames = pathname.split("/").filter((x) => x);
+
   return (
-    <div className="flex min-h-full flex-col bg-[var(--surface)] text-[var(--ink)]">
-      <header className="border-b border-[var(--border)] bg-white shadow-sm">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--brand)] text-sm font-bold text-white">
-              S
-            </span>
-            <div>
-              <p className="text-sm font-semibold leading-tight">Dealer Portal</p>
-              <p className="text-xs text-[var(--muted)]">SIM distribution returns (prototype)</p>
-            </div>
-          </Link>
-          <nav className="flex flex-wrap gap-1">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-[var(--ink-soft)] transition hover:bg-[var(--surface)] hover:text-[var(--ink)]"
-              >
-                {item.label}
-              </Link>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#F8F9FA" }}>
+      <TopNav sidebarWidth={sidebarWidth} onMenuClick={handleDrawerToggle} />
+
+      {/* Sidebar Responsive Implementation */}
+      <Box
+        component="nav"
+        sx={{ width: { md: sidebarWidth }, flexShrink: { md: 0 } }}
+      >
+        {/* Temporary Drawer for Mobile */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": { boxSizing: "border-box", width: sidebarWidth },
+          }}
+        >
+          <Sidebar onItemClick={handleDrawerToggle} />
+        </Drawer>
+
+        {/* Permanent Drawer for Desktop */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: "none", md: "block" },
+            "& .MuiDrawer-paper": { 
+              boxSizing: "border-box", 
+              width: sidebarWidth,
+              borderRight: "1px solid rgba(0,0,0,0.06)",
+              bgcolor: "#fff" 
+            },
+          }}
+          open
+        >
+          <Sidebar />
+        </Drawer>
+      </Box>
+
+      {/* Main Content Area */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: { md: `calc(100% - ${sidebarWidth}px)` },
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          pt: "64px",
+        }}
+      >
+        {/* Breadcrumbs Section */}
+        <Box sx={{ px: { xs: 2, md: 4 }, py: 0.75 }}>
+          <Breadcrumbs separator={<NavigateNext fontSize="small" sx={{ color: "text.disabled" }} />}>
+            <Link component={NextLink} href="/" underline="none" color="primary" sx={{ fontSize: "0.75rem", fontWeight: 700 }}>
+              Portal
+            </Link>
+            {pathnames.map((value, index) => (
+              <Typography key={index} color="text.secondary" sx={{ fontSize: "0.75rem", fontWeight: 500 }}>
+                {value.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+              </Typography>
             ))}
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-      <footer className="border-t border-[var(--border)] bg-white py-4 text-center text-xs text-[var(--muted)]">
-        Static UI prototype — aligned with RTC Dealer SIM Distribution Returns HLD. No live APIs.
-      </footer>
-    </div>
+          </Breadcrumbs>
+        </Box>
+
+        <Box sx={{ flex: 1, px: { xs: 2, md: 4 }, pb: 2 }}>
+          {children}
+        </Box>
+      </Box>
+    </Box>
   );
 }

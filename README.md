@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dealer SIM Distribution Returns — static prototype (Safaricom SUI)
 
-## Getting Started
+Next.js **static export** UI for the RTC Dealer SIM Distribution Returns journey.
 
-First, run the development server:
+## Styling — [Safaricom SUI](https://sui.safaricom.co.ke/)
+
+Uses the official **`@safaricom/sui`** package (Material UI theme + Safaricom fonts/CSS) as documented on [SUI Storybook](https://sui.safaricom.co.ke/):
+
+- `ThemeProvider` + default `theme` from `@safaricom/sui`
+- `@safaricom/sui/style.css` for fonts and base styles
+- SUI components where helpful: `InputField`, `DotsStepper`, `SuiDatePicker`, `Alert`
+- MUI: `AppBar`, `Button`, `Paper`, `TextField`, `Table`, etc. (themed by SUI)
+
+Next.js is configured with `transpilePackages: ["@safaricom/sui"]` per the SUI README.
+
+Peer dependency note: `.npmrc` sets `legacy-peer-deps=true` because `@safaricom/sui@1.5.1` declares `react-dom@^18` while this app uses React 19.
+
+## Run locally
 
 ```bash
+cd /home/winston/dealer-sim-returns-prototype
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Static build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Output: `out/` (deploy to any static host).
 
-## Learn More
+## Copy into `sim-dealership` workspace
 
-To learn more about Next.js, take a look at the following resources:
+If that folder is owned by root, fix ownership then sync (excluding `node_modules`):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+sudo chown -R "$USER:$USER" /path/to/sim-dealership
+rsync -a --exclude node_modules --exclude .next --exclude out /home/winston/dealer-sim-returns-prototype/ /path/to/sim-dealership/
+cd /path/to/sim-dealership && npm install && npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Or archive:
 
-## Deploy on Vercel
+```bash
+tar -czvf ~/dealer-sim-sui-prototype.tgz -C /home/winston/dealer-sim-returns-prototype \
+  --exclude=node_modules --exclude=.next --exclude=out .
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Prototype data
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Valid serials: **894000000000000** – **894000000000099**
+- Resellers: **RS-1001**, **RS-2044**, **RS-3312**
+- IPRS mock: national ID with **≥5 digits** passes

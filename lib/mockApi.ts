@@ -18,7 +18,7 @@ export async function mockFetchSerialsByRange(start: string, end: string) {
     return { ok: false as const, error: "Invalid serial range." };
   }
   if (b < a) return { ok: false as const, error: "End serial must be ≥ start serial." };
-  if (b - a > 99n) return { ok: false as const, error: "Range too large for this step (max 100)." };
+  if (b - a > BigInt(99)) return { ok: false as const, error: "Range too large for this step (max 100)." };
   const serials: string[] = [];
   for (let x = a; x <= b; x++) {
     if (!serialInAllocationRange(x)) {
