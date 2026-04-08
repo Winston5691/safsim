@@ -73,6 +73,7 @@ export default function SimSerialsPage() {
   const [filterVan, setFilterVan] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [openValidate, setOpenValidate] = useState(false);
+  const [validateMethod, setValidateMethod] = useState<"single" | "range">("single");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
@@ -118,7 +119,7 @@ export default function SimSerialsPage() {
         {/* Top Actions */}
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
           <Stack direction="row" spacing={1}>
-            {/* Batch Submission moved from here */}
+            {/* Batch Validation moved from here */}
           </Stack>
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" startIcon={<PictureAsPdf />} size="small" sx={{ borderRadius: 1.5, fontWeight: 600, textTransform: "none" }}>Export PDF</Button>
@@ -165,7 +166,7 @@ export default function SimSerialsPage() {
                   size="small"
                   sx={{ fontWeight: 600, borderRadius: 1.5, textTransform: "none" }}
                 >
-                  Batch Submission
+                  Batch Validation
                 </Button>
                 <Button
                   variant="contained"
@@ -228,12 +229,25 @@ export default function SimSerialsPage() {
           <DataTable columns={columns} rows={filteredSims} />
         </Card>
 
-        {/* Single Validate Dialog */}
+        {/* Single/Range Validate Dialog */}
         <Dialog open={openValidate} onClose={() => setOpenValidate(false)} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: 2 } }}>
-          <DialogTitle sx={{ fontWeight: 600 }}>Validate Single SIM Serial</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 600 }}>Validate SIM Serial</DialogTitle>
           <DialogContent dividers>
             <Stack spacing={2} sx={{ mt: 1 }}>
-              <TextField fullWidth label="SIM Serial Number" placeholder="Enter single serial" size="small" />
+              <FormControl>
+                <RadioGroup row value={validateMethod} onChange={(e) => setValidateMethod(e.target.value as "single" | "range")}>
+                  <FormControlLabel value="single" control={<Radio size="small" />} label="Single Serial" />
+                  <FormControlLabel value="range" control={<Radio size="small" />} label="Serial Range" />
+                </RadioGroup>
+              </FormControl>
+              {validateMethod === "single" ? (
+                <TextField fullWidth label="SIM Serial Number" placeholder="Enter single serial" size="small" />
+              ) : (
+                <Stack direction="row" spacing={2}>
+                  <TextField fullWidth label="Start Range" placeholder="e.g 89254..." size="small" />
+                  <TextField fullWidth label="End Range" placeholder="e.g 89254..." size="small" />
+                </Stack>
+              )}
             </Stack>
           </DialogContent>
           <DialogActions sx={{ p: 2, px: 3 }}>
