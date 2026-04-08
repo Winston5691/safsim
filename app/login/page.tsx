@@ -13,8 +13,16 @@ import {
   InputAdornment,
   IconButton,
   Link,
+  Divider,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Lock, Person } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  Lock,
+  Person,
+  Google as GoogleIcon,
+  Security as SecurityIcon
+} from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -39,44 +47,60 @@ export default function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         background: "linear-gradient(135deg, #1b9330 0%, #2ecc71 100%)",
+        position: "relative",
+        overflow: "hidden",
         p: 2,
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: "150%",
+          height: "150%",
+          background: "radial-gradient(circle, rgba(235, 25, 35, 0.05) 0%, transparent 70%)",
+          top: "-25%",
+          left: "-25%",
+          zIndex: 0,
+        }
       }}
     >
-      <Container maxWidth="xs" className="animate-fadeInUp">
+      <Container maxWidth="xs" className="animate-fadeInUp" sx={{ position: "relative", zIndex: 1 }}>
         <Paper
-          elevation={24}
+          elevation={0}
           sx={{
-            p: 4,
-            borderRadius: 3,
+            p: { xs: 3, sm: 5 },
+            borderRadius: 4,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
           }}
           className="glassmorphism"
         >
+          {/* Logo Section */}
           <Box
             sx={{
-              width: 60,
-              height: 60,
-              borderRadius: 2,
-              bgcolor: "white",
+              width: 120,
+              height: 48,
+              mb: 4,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              mb: 3,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             }}
           >
-             <Typography variant="h4" fontWeight={700} color="primary">S</Typography>
+            <img
+              src="https://www.safaricom.co.ke/images/safaricom-25.gif"
+              alt="Safaricom 25 Logo"
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            />
           </Box>
 
-          <Typography variant="h5" component="h1" fontWeight={600} gutterBottom>
+          <Typography variant="h5" component="h1" fontWeight={700} sx={{ color: "var(--safaricom-dark)", mb: 1 }}>
             Welcome Back
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center" mb={4}>
+          <Typography variant="body2" color="text.secondary" textAlign="center" mb={4} sx={{ opacity: 0.8 }}>
             Dealer SIM Distribution Returns Portal
           </Typography>
 
+          {/* Login Form */}
           <Box component="form" onSubmit={handleLogin} sx={{ width: "100%" }}>
             <Stack spacing={2.5}>
               <TextField
@@ -90,6 +114,7 @@ export default function LoginPage() {
                       <Person color="action" />
                     </InputAdornment>
                   ),
+                  sx: { borderRadius: 2.5 }
                 }}
               />
               <TextField
@@ -108,18 +133,21 @@ export default function LoginPage() {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        size="small"
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
+                  sx: { borderRadius: 2.5 }
                 }}
               />
+
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="caption" sx={{ cursor: "pointer", "&:hover": { color: "primary.main" } }}>
+                <Typography variant="caption" sx={{ cursor: "pointer", fontWeight: 500, color: "text.secondary", "&:hover": { color: "var(--safaricom-green)" } }}>
                   Remember me
                 </Typography>
-                <Link component={NextLink} href="/login/forgot-password" variant="caption" color="primary" sx={{ fontWeight: 600, textDecoration: "none" }}>
+                <Link component={NextLink} href="/login/forgot-password" variant="caption" sx={{ fontWeight: 600, color: "--safaricom-green", textDecoration: "none" }}>
                   Forgot password?
                 </Link>
               </Stack>
@@ -131,18 +159,19 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading}
                 sx={{
-                  py: 1.8,
-                  borderRadius: 3,
+                  py: 1.5,
+                  borderRadius: 2.5,
                   fontWeight: 600,
                   fontSize: "1rem",
-                  bgcolor: "#1b9330",
-                  boxShadow: "0 10px 20px rgba(27, 147, 48, 0.2)",
+                  bgcolor: "var(--safaricom-green)",
+                  textTransform: "none",
+                  boxShadow: "0 8px 16px rgba(27, 147, 48, 0.2)",
                   "&:hover": {
                     bgcolor: "#167a27",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 15px 30px rgba(27, 147, 48, 0.3)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 12px 24px rgba(27, 147, 48, 0.3)",
                   },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transition: "all 0.2s ease",
                 }}
               >
                 {loading ? "Authenticating..." : "Sign In to Portal"}
@@ -150,11 +179,47 @@ export default function LoginPage() {
             </Stack>
           </Box>
 
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 4, textAlign: "center" }}>
-            Secure login using OAuth2/JWT tokens via API Gateway.
-            <br />
-            &copy; 2026 Safaricom PLC. All Rights Reserved.
-          </Typography>
+          {/* Divider */}
+          <Box sx={{ width: "100%", my: 4, display: "flex", alignItems: "center" }}>
+            <Divider sx={{ flex: 1, borderColor: "rgba(0,0,0,0.06)" }} />
+            <Typography variant="caption" sx={{ px: 2, color: "text.secondary", fontWeight: 500 }}>
+              OR LOGIN WITH
+            </Typography>
+            <Divider sx={{ flex: 1, borderColor: "rgba(0,0,0,0.06)" }} />
+          </Box>
+
+          {/* Social Login Options */}
+          <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<GoogleIcon />}
+              sx={{
+                py: 1.2,
+                borderRadius: 2.5,
+                fontWeight: 600,
+                textTransform: "none",
+                borderColor: "rgba(0,0,0,0.1)",
+                color: "var(--safaricom-dark)",
+                "&:hover": {
+                  borderColor: "#4285F4",
+                  bgcolor: "rgba(66, 133, 244, 0.02)",
+                }
+              }}
+            >
+              Sign in with Google
+            </Button>
+          </Stack>
+
+          <Box sx={{ mt: 5, textAlign: "center" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5, fontWeight: 500 }}>
+              Trouble logging in? <Link component={NextLink} href="/support" sx={{ color: "var(--safaricom-green)", textDecoration: "none" }}>Contact Support</Link>
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.6 }}>
+              &copy; 2026 Safaricom PLC. All Rights Reserved.
+            </Typography>
+          </Box>
         </Paper>
       </Container>
     </Box>
